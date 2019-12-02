@@ -2,6 +2,7 @@
 
 package require PWI_Glyph 3.18.3
 
+#TODO: create a cleaner usage string to print here
 if { $argc < 2 } {
   puts "The Pointwise project file must be passed to this script as the first
   argument and a rotation angle as the second"
@@ -24,10 +25,6 @@ if { $argc < 2 } {
 }
 
 puts "[pw::Application getVersion]"
-#puts "List of supported Glyph commands"
-#foreach c [lsort [pw::Application getAllCommandNames]] {
-#  puts "  $c"
-#}
 
 puts "loading $pwfile..."
 pw::Application reset
@@ -56,7 +53,7 @@ if { [llength $rotateModels] == 0 } {
   puts "ERROR: there must be at least one model named rotate-*"
   exit
 } else {
-  puts "Found [llength $rotateModels] models to rotate"
+  puts "Found [llength $rotateModels] [expr { [llength $rotateModels] > 1 ? "models" : "model" }] to rotate"
 }
 
 puts "Rotate models: $rotateModels"
