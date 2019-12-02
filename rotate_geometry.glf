@@ -159,7 +159,7 @@ if { $verify } {
   #puts "rotateBlockDomains sorted: [pw::Entity sort $rotateBlockDomains]"
 
   set gridExporter [pw::Application begin GridExport [pw::Entity sort $rotateBlockDomains]]
-  set status abort
+    set status abort
     # This does not work as Pointwise's Glyph page claims it should:
     #if { $gridExporter && [$gridExporter initialize -strict -type grid /Users/ehereth/Downloads/foobar.cgns] }
     if { [$gridExporter initialize -strict -type CGNS "$currentDirectory/$fileName-boundaries.cgns"] } {
@@ -168,7 +168,7 @@ if { $verify } {
         puts "gridExporter {verify,canWrite,write} succeeded..."
         set status end
       } else { puts "gridExporter {verify,canWrite,write} failed..." }
-  }
+    }
 
   $gridExporter $status
   unset gridExporter
