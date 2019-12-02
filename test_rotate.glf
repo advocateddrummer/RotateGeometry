@@ -2,13 +2,17 @@
 
 package require PWI_Glyph 3.18.3
 
-if { $argc != 1 } {
+if { $argc != 2 } {
   puts "The Pointwise project file must be passed to this script as the first
-  argument"
+  argument and a rotation angle as the second"
   exit
 } else {
   set pwfile [lindex $argv 0]
   puts "Opening Pointwise project file $pwfile"
+  # TODO: support multiple rotation angles in case models need to be rotated
+  # differing amounts.
+  set rotateAngle [lindex $argv 1]
+  puts "Rotating model(s) by $rotateAngle degrees"
 }
 
 puts "[pw::Application getVersion]"
@@ -108,7 +112,6 @@ set rotateMode [pw::Application begin Modify $rotateModels]
     # Define rotation axis
     set rotateAxis [pwu::Vector3 normalize [pwu::Vector3 subtract $pt1Coord $pt2Coord]]
     set rotateAnchor $pt1Coord
-    set rotateAngle 45
 
     puts "The rotation angle is $rotateAngle degrees about axis: $rotateAxis"
 
