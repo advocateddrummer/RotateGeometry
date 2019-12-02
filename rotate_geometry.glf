@@ -177,14 +177,25 @@ if { $verify } {
   puts "\tcheck this for validity and then re-run this script without the \"--verify\" flag"
   puts "####################################################################################################"
 } else {
-  # TODO: check for success/failure after this and handle result
   set unsSolver [pw::Application begin UnstructuredSolver [list $rotateBlock]]
+    set status end
     $unsSolver setStopWhenFullLayersNotMet false
     $unsSolver setAllowIncomplete true
     $unsSolver run Initialize
-  $unsSolver end
+
+    # This should check the status of the initialization, however, I am not
+    # sure how robust this is.
+    set failed [$unsSolver getFailedEntities]
+    if { [llength $failed] > 0 } {
+      puts "ERROR: there was a problem initializing at least one block; aborting"
+      set status abort
+    }
+  $unsSolver $status
   unset unsSolver
   pw::Application markUndoLevel Initialize
+
+  # Exit if Initialize fails
+  if { [string compare $status "abort"] == 0 } { exit }
 
   set caeType [pw::Application getCAESolver]
   set caeExtensions [pw::Application getCAESolverAttribute FileExtensions]
@@ -212,13 +223,15 @@ if { $verify } {
   $caeExporter $status
   unset caeExporter
 
-  puts "####################################################################################################"
-  if { [llength $caeExtensions] == 1 } {
-    puts "Exported the rotated CAE to $currentDirectory/$fileName.$caeExtensions"
-  } else {
-    puts "Exported the rotated CAE to $currentDirectory/$fileName.\{[join $caeExtensions ,]\}"
+  if { [string compare $status "end"] == 0 } {
+    puts "####################################################################################################"
+    if { [llength $caeExtensions] == 1 } {
+      puts "Exported the rotated CAE to $currentDirectory/$fileName.$caeExtensions"
+    } else {
+      puts "Exported the rotated CAE to $currentDirectory/$fileName.\{[join $caeExtensions ,]\}"
+    }
+    puts "####################################################################################################"
   }
-  puts "####################################################################################################"
 }
 
 # vim: set ft=tcl:
