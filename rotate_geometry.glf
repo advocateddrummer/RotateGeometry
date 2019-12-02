@@ -26,6 +26,9 @@ if { $argc < 2 } {
 
 puts "[pw::Application getVersion]"
 
+# Set current working directory to be used as the base for saving files
+set currentDirectory [pwd]
+
 puts "loading $pwfile..."
 pw::Application reset
 pw::Application load "$pwfile"
@@ -58,6 +61,14 @@ if { [llength $rotateModels] == 0 } {
 
 puts "Rotate models: $rotateModels"
 puts "Rotate model names: $rotateModelNames"
+
+# Create file name template; I do not like this name string, but it should be
+# clear albeit ugly
+set fileName [lindex  [split $pwfile .] 0]
+foreach m $rotateModelNames {
+  lappend fileName $m $rotateAngle
+}
+set fileName [join $fileName _]
 
 # Now look for rotation axis information which should be at least two points
 # named rotate-*-point-1 and rotate-*-point-2, two for each model to be
@@ -149,7 +160,7 @@ if { $verify } {
   set status abort
     # This does not work as Pointwise's Glyph page claims it should:
     #if { $gridExporter && [$gridExporter initialize -strict -type grid /Users/ehereth/Downloads/foobar.cgns] }
-    if { [$gridExporter initialize -strict -type CGNS "/Users/ehereth/Downloads/foobar-boundaries.cgns"] } {
+    if { [$gridExporter initialize -strict -type CGNS "$currentDirectory/$fileName-boundaries.cgns"] } {
       puts "gridExporter initialize succeeded..."
       if { [$gridExporter verify] && [$gridExporter canWrite] && [$gridExporter write] } {
         puts "gridExporter {verify,canWrite,write} succeeded..."
@@ -160,7 +171,7 @@ if { $verify } {
   $gridExporter $status
   unset gridExporter
   puts "####################################################################################################"
-  puts "Exported the rotated boundaries to /Users/ehereth/Downloads/foobar-boundaries.cgns"
+  puts "Exported the rotated boundaries to $currentDirectory/$fileName-boundaries.cgns"
   puts "\tcheck this for validity and then re-run this script without the \"--verify\" flag"
   puts "####################################################################################################"
 } else {
@@ -176,11 +187,11 @@ if { $verify } {
   set status abort
     # This does not work as Pointwise's Glyph page claims it should:
     #if { $caeExporter && [$caeExporter initialize -strict -type CAE /Users/ehereth/Downloads/foobar.cgns] }
-    if { [$caeExporter initialize -strict -type CAE "/Users/ehereth/Downloads/foobar.cgns"] } {
+    if { [$caeExporter initialize -strict -type CAE "$currentDirectory/$fileName.cgns"] } {
       puts "caeExporter initialize succeeded..."
       $caeExporter setAttribute FilePrecision Double
-      $caeExporter setAttribute GridExportMeshLinkFileName "/Users/ehereth/Downloads/foobar.xml"
-      $caeExporter setAttribute GridExportMeshLinkDatabaseFileName "/Users/ehereth/Downloads/foobar.nmb"
+      $caeExporter setAttribute GridExportMeshLinkFileName "$currentDirectory/$fileName.xml"
+      $caeExporter setAttribute GridExportMeshLinkDatabaseFileName "$currentDirectory/$fileName.nmb"
       if { [$caeExporter verify] && [$caeExporter canWrite] && [$caeExporter write] } {
         puts "caeExporter {verify,canWrite,write} succeeded..."
         set status end
@@ -189,4 +200,7 @@ if { $verify } {
 
   $caeExporter $status
   unset caeExporter
+  puts "####################################################################################################"
+  puts "Exported the rotated CAE to $currentDirectory/$fileName.cgns"
+  puts "####################################################################################################"
 }
