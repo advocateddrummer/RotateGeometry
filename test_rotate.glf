@@ -83,7 +83,7 @@ if { [llength $rotatePoints] == 0 } {
   puts "ERROR: there must be an even number of points to define a rotation axis"
   exit
 } else {
-  puts "Found [llength $rotatePoints] models to rotate"
+  puts "Found [llength $rotatePoints] points to define [expr { [llength $rotatePoints] > 2 ? "rotation axes" : "a rotation axis" } ]"
 }
 
 puts "Rotate points: $rotatePoints"
