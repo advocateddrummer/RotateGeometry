@@ -5,7 +5,9 @@ package require PWI_Glyph 3.18.3
 #TODO: create a cleaner usage string to print here
 if { $argc < 2 } {
   puts "The Pointwise project file must be passed to this script as the first
-  argument and a rotation angle as the second"
+  argument and a rotation angle as the second. You may pass the --verify
+  argument as well to have this script export the rotated boundaries only for
+  initial verification."
   exit
 } else {
   puts "Calling $argv0 with the following arguments: $argv"
@@ -175,6 +177,7 @@ if { $verify } {
   puts "\tcheck this for validity and then re-run this script without the \"--verify\" flag"
   puts "####################################################################################################"
 } else {
+  # TODO: check for success/failure after this and handle result
   set unsSolver [pw::Application begin UnstructuredSolver [list $rotateBlock]]
     $unsSolver setStopWhenFullLayersNotMet false
     $unsSolver setAllowIncomplete true
