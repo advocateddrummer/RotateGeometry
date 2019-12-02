@@ -2,11 +2,19 @@
 
 package require PWI_Glyph 3.18.3
 
-if { $argc != 2 } {
+if { $argc < 2 } {
   puts "The Pointwise project file must be passed to this script as the first
   argument and a rotation angle as the second"
   exit
 } else {
+  puts "Calling $argv0 with the following arguments: $argv"
+  # Look for --verify in argument list
+  set verify false
+  if { [lsearch $argv "--verify"] != -1 } {
+    puts "Running in verify mode"
+    set verify true
+  }
+
   set pwfile [lindex $argv 0]
   puts "Opening Pointwise project file $pwfile"
   # TODO: support multiple rotation angles in case models need to be rotated
@@ -123,31 +131,65 @@ $rotateMode end
 unset rotateMode
 pw::Application markUndoLevel Rotate
 
-# TODO: add support to only write out modified boundaries for verification
-# before re-initializing the block(s).
+set rotateBlock [pw::GridEntity getByName rotate-block-1]
 
-set rotateBlock [pw::GridEntity getByName blk-1]
-set unsSolver [pw::Application begin UnstructuredSolver [list $rotateBlock]]
-  $unsSolver setStopWhenFullLayersNotMet false
-  $unsSolver setAllowIncomplete true
-  $unsSolver run Initialize
-$unsSolver end
-unset unsSolver
-pw::Application markUndoLevel Initialize
+if { $verify } {
+  puts "Not initializing block in verify mode"
+  # Get block faces
+  set rotateBlockFaces [$rotateBlock getFaces]
+  # Extract domains from faces
+  set rotateBlockDomains [list]
+  foreach f $rotateBlockFaces {
+    set domains [$f getDomains]
+    # Convoluted way to make sure this is a flat list a la: https://stackoverflow.com/a/17636938
+    set rotateBlockDomains [list {*}$rotateBlockDomains {*}$domains]
+  }
+  #puts "rotateBlockFaces: $rotateBlockFaces"
+  #puts "rotateBlockDomains: $rotateBlockDomains"
+  #puts "rotateBlockDomains sorted: [pw::Entity sort $rotateBlockDomains]"
 
-set caeExporter [pw::Application begin CaeExport [pw::Entity sort [list $rotateBlock]]]
-set status abort
-  #if { $caeExporter && [$caeExporter initialize -strict -type CAE /Users/ehereth/Downloads/foobar.cgns] } {
-  if { [$caeExporter initialize -strict -type CAE "/Users/ehereth/Downloads/foobar.cgns"] } {
-    puts "caeExporter initialize succeeded..."
-    $caeExporter setAttribute FilePrecision Double
-    $caeExporter setAttribute GridExportMeshLinkFileName "/Users/ehereth/Downloads/foobar.xml"
-    $caeExporter setAttribute GridExportMeshLinkDatabaseFileName "/Users/ehereth/Downloads/foobar.nmb"
-    if { [$caeExporter verify] && [$caeExporter canWrite] && [$caeExporter write] } {
-      puts "caeExporter {verify,canWrite,write} succeeded..."
-      set status end
-    } else { puts "caeExporter {verify,canWrite,write} failed..." }
+  set gridExporter [pw::Application begin GridExport [pw::Entity sort $rotateBlockDomains]]
+  set status abort
+    # This does not work as Pointwise's Glyph page claims it should:
+    #if { $gridExporter && [$gridExporter initialize -strict -type grid /Users/ehereth/Downloads/foobar.cgns] }
+    if { [$gridExporter initialize -strict -type CGNS "/Users/ehereth/Downloads/foobar-boundaries.cgns"] } {
+      puts "gridExporter initialize succeeded..."
+      if { [$gridExporter verify] && [$gridExporter canWrite] && [$gridExporter write] } {
+        puts "gridExporter {verify,canWrite,write} succeeded..."
+        set status end
+      } else { puts "gridExporter {verify,canWrite,write} failed..." }
+  }
+
+  $gridExporter $status
+  unset gridExporter
+  puts "####################################################################################################"
+  puts "Exported the rotated boundaries to /Users/ehereth/Downloads/foobar-boundaries.cgns"
+  puts "\tcheck this for validity and then re-run this script without the \"--verify\" flag"
+  puts "####################################################################################################"
+} else {
+  set unsSolver [pw::Application begin UnstructuredSolver [list $rotateBlock]]
+    $unsSolver setStopWhenFullLayersNotMet false
+    $unsSolver setAllowIncomplete true
+    $unsSolver run Initialize
+  $unsSolver end
+  unset unsSolver
+  pw::Application markUndoLevel Initialize
+
+  set caeExporter [pw::Application begin CaeExport [pw::Entity sort [list $rotateBlock]]]
+  set status abort
+    # This does not work as Pointwise's Glyph page claims it should:
+    #if { $caeExporter && [$caeExporter initialize -strict -type CAE /Users/ehereth/Downloads/foobar.cgns] }
+    if { [$caeExporter initialize -strict -type CAE "/Users/ehereth/Downloads/foobar.cgns"] } {
+      puts "caeExporter initialize succeeded..."
+      $caeExporter setAttribute FilePrecision Double
+      $caeExporter setAttribute GridExportMeshLinkFileName "/Users/ehereth/Downloads/foobar.xml"
+      $caeExporter setAttribute GridExportMeshLinkDatabaseFileName "/Users/ehereth/Downloads/foobar.nmb"
+      if { [$caeExporter verify] && [$caeExporter canWrite] && [$caeExporter write] } {
+        puts "caeExporter {verify,canWrite,write} succeeded..."
+        set status end
+      } else { puts "caeExporter {verify,canWrite,write} failed..." }
+  }
+
+  $caeExporter $status
+  unset caeExporter
 }
-
-$caeExporter $status
-unset caeExporter
