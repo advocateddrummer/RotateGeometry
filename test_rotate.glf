@@ -61,12 +61,19 @@ set rotatePointNames [list]
 # Look for points named like rotate-*-point-1 and rotate-*-point-2
 # (rotate-1-point-1, rotate-1-point-2, etc.), one pair for each model to
 # rotate.
-foreach p $points {
-  set name [$p getName]
-  if { [string match "rotate-*" $name] } {
-    lappend rotatePoints $p
-    lappend rotatePointNames $name
-  }
+# Note: this logic extracts the rotation points in the proper order, as defined
+# by the user, so that the rotation direction is proper. The way this was done
+# before did not necessarily create the proper rotation axes.
+set modelIndex 1
+foreach m $rotateModels {
+  set ptName1 "rotate-$modelIndex-point-1"
+  set ptName2 "rotate-$modelIndex-point-2"
+  set pt1 [pw::DatabaseEntity getByName $ptName1]
+  set pt2 [pw::DatabaseEntity getByName $ptName2]
+  # TODO: check for existence of these points; do not assume they were found.
+  lappend rotatePoints $pt1 $pt2
+  lappend rotatePointNames $ptName1 $ptName2
+  incr modelIndex
 }
 
 if { [llength $rotatePoints] == 0 } {
@@ -86,9 +93,6 @@ set rotateMode [pw::Application begin Modify $rotateModels]
 
   set pointIndex 0
   foreach m $rotateModels {
-
-    # TODO: extract points in alphabetic order for dependable rotation
-    # dirction.
 
     # Get axis point coordinates
     set pt1 [lindex $rotatePoints $pointIndex]
