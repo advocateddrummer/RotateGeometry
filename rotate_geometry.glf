@@ -186,25 +186,38 @@ if { $verify } {
   unset unsSolver
   pw::Application markUndoLevel Initialize
 
+  set caeType [pw::Application getCAESolver]
+  set caeExtensions [pw::Application getCAESolverAttribute FileExtensions]
+
+  puts "caeType: $caeType, caeExtensions: $caeExtensions"
+
   set caeExporter [pw::Application begin CaeExport [pw::Entity sort [list $rotateBlock]]]
-  set status abort
+    set status abort
     # This does not work as Pointwise's Glyph page claims it should:
-    #if { $caeExporter && [$caeExporter initialize -strict -type CAE /Users/ehereth/Downloads/foobar.cgns] }
-    if { [$caeExporter initialize -strict -type CAE "$currentDirectory/$fileName.cgns"] } {
+    # if { $caeExporter && [$caeExporter initialize -strict -type CAE "$currentDirectory/$fileName"] }
+
+    # TODO: for some reason, this will sometimes
+    # add the proper extension, and other times it will not. E.g., CGNS files do
+    # not have an extension added, but many other I have tested do.
+    if { [$caeExporter initialize -strict -type CAE "$currentDirectory/$fileName"] } {
       puts "caeExporter initialize succeeded..."
-      $caeExporter setAttribute FilePrecision Double
-      $caeExporter setAttribute GridExportMeshLinkFileName "$currentDirectory/$fileName.xml"
-      $caeExporter setAttribute GridExportMeshLinkDatabaseFileName "$currentDirectory/$fileName.nmb"
+      #$caeExporter setAttribute FilePrecision Double
+      #$caeExporter setAttribute GridExportMeshLinkFileName "$currentDirectory/$fileName.xml"
+      #$caeExporter setAttribute GridExportMeshLinkDatabaseFileName "$currentDirectory/$fileName.nmb"
       if { [$caeExporter verify] && [$caeExporter canWrite] && [$caeExporter write] } {
         puts "caeExporter {verify,canWrite,write} succeeded..."
         set status end
       } else { puts "caeExporter {verify,canWrite,write} failed..." }
-  }
-
+    }
   $caeExporter $status
   unset caeExporter
+
   puts "####################################################################################################"
-  puts "Exported the rotated CAE to $currentDirectory/$fileName.cgns"
+  if { [llength $caeExtensions] == 1 } {
+    puts "Exported the rotated CAE to $currentDirectory/$fileName.$caeExtensions"
+  } else {
+    puts "Exported the rotated CAE to $currentDirectory/$fileName.\{[join $caeExtensions ,]\}"
+  }
   puts "####################################################################################################"
 }
 
