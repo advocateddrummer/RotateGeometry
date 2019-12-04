@@ -2,6 +2,8 @@
 
 package require PWI_Glyph 3.18.3
 
+puts "Running $argv0 with: [pw::Application getVersion]"
+
 #TODO: create a cleaner usage string to print here
 if { $argc < 2 } {
   puts "The Pointwise project file must be passed to this script as the first
@@ -18,23 +20,21 @@ if { $argc < 2 } {
     set verify true
   }
 
-  set pwfile [lindex $argv 0]
-  puts "Opening Pointwise project file $pwfile"
+  set pwFile [lindex $argv 0]
+  puts "Opening Pointwise project file $pwFile"
   # TODO: support multiple rotation angles in case models need to be rotated
   # differing amounts.
   set rotateAngle [lindex $argv 1]
   puts "Rotating model(s) by $rotateAngle degrees"
 }
 
-puts "[pw::Application getVersion]"
-
 # Set current working directory to be used as the base for saving files
 set currentDirectory [pwd]
 
-puts "loading $pwfile..."
+puts "loading $pwFile..."
 pw::Application reset
-pw::Application load "$pwfile"
-puts "loaded $pwfile..."
+pw::Application load "$pwFile"
+puts "loaded $pwFile..."
 
 pw::Application setUndoMaximumLevels 20
 
@@ -66,7 +66,7 @@ puts "Rotate model names: $rotateModelNames"
 
 # Create file name template; I do not like this name string, but it should be
 # clear albeit ugly
-set fileName [lindex  [split $pwfile .] 0]
+set fileName [lindex  [split $pwFile .] 0]
 foreach m $rotateModelNames {
   lappend fileName $m $rotateAngle
 }
