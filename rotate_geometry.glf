@@ -1,4 +1,9 @@
-# Pointwise V18.3 Journal file - Wed Nov 13 15:10:39 2019
+# This script rotates geometry in a Pointwise project, re-initializes any block
+# containing modified geometry, and exports the resulting mesh/CAE. The
+# Pointwise project file _is not_ saved/modified.
+#
+# Author: Ethan Alan Hereth
+# Email: ehereth@utk.edu or e.a.hereth@gmail.com
 
 package require PWI_Glyph 3.18.3
 
