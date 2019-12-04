@@ -1,7 +1,9 @@
 # RotateGeom
 
 This Pointwise Glyph script is used to rotate specific geometry in a Pointwise
-project and re-initialize the volume block, all from the CLI.
+project and re-initialize the volume block, all from the CLI. It **does not**
+modify the Pointwise project file (.pw file), it _only_ modifies the project in
+memory and exports the resulting CAE file.
 
 In its current state, it must be run with a Pointwise project file as the first
 argument and the rotation amount, in degrees, specified as the second argument.
