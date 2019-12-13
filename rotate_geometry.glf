@@ -49,6 +49,7 @@ set models [pw::Database getAll -type pw::Model]
 # Initialize empty lists for the models to be rotated
 set rotateModels [list]
 set rotateModelNames [list]
+set rotateModelList [list]
 
 # Look for any model(s) named like rotate-* (rotate-1, rotate-2, etc.)
 foreach m $models {
@@ -56,6 +57,7 @@ foreach m $models {
   if { [string match "rotate-*" $name] } {
     lappend rotateModels $m
     lappend rotateModelNames $name
+    lappend rotateModelList [list $name $m]
   }
 }
 
@@ -66,8 +68,11 @@ if { [llength $rotateModels] == 0 } {
   puts "Found [llength $rotateModels] [expr { [llength $rotateModels] > 1 ? "models" : "model" }] to rotate"
 }
 
+# Sort the rotateModelList by its first sub-list item, the user assigned name.
+set rotateModelList [lsort -index 0 $rotateModelList]
 puts "Rotate models: $rotateModels"
 puts "Rotate model names: $rotateModelNames"
+puts "Rotate model list: $rotateModelList"
 
 # Create file name template; I do not like this name string, but it should be
 # clear albeit ugly
@@ -119,7 +124,10 @@ puts "Rotate point names: $rotatePointNames"
 set rotateMode [pw::Application begin Modify $rotateModels]
 
   set pointIndex 0
-  foreach m $rotateModels {
+  foreach pair $rotateModelList {
+    # Get internal model name
+    set model [lindex $pair 0]
+    set modelName [lindex $pair 1]
 
     # Get axis point coordinates
     set pt1 [lindex $rotatePoints $pointIndex]
@@ -129,7 +137,9 @@ set rotateMode [pw::Application begin Modify $rotateModels]
     set pt2Coord [$pt2 getXYZ]
     incr pointIndex
 
-    puts "Rotating model $m (named [$m getName]) about the points:\
+    #puts "Rotating model $m (named [$m getName]) about the points:\
+          $pt2 and $pt2 (named [$pt1 getName] at $pt1Coord and [$pt2 getName] at $pt2Coord)"
+    puts "Rotating model $model (named $modelName) about the points:\
           $pt2 and $pt2 (named [$pt1 getName] at $pt1Coord and [$pt2 getName] at $pt2Coord)"
 
     # Define rotation axis
@@ -139,7 +149,7 @@ set rotateMode [pw::Application begin Modify $rotateModels]
     puts "The rotation angle is $rotateAngle degrees about axis: $rotateAxis"
 
     # Perform rotation
-    pw::Entity transform [pwu::Transform rotation -anchor $rotateAnchor $rotateAxis $rotateAngle] $m
+    pw::Entity transform [pwu::Transform rotation -anchor $rotateAnchor $rotateAxis $rotateAngle] $modelName
   }
 
 $rotateMode end
