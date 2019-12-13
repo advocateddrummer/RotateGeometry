@@ -20,9 +20,13 @@ if { $argc < 2 } {
   puts "Calling $argv0 with the following arguments: $argv"
   # Look for --verify in argument list
   set verify false
-  if { [lsearch $argv "--verify"] != -1 } {
+  set idx [lsearch $argv "--verify"]
+  if { $idx != -1 } {
     puts "Running in verify mode"
     set verify true
+    # Remove --verify argument from list
+    set argv [lreplace $argv $idx $idx]
+  }
 
   # Look for --verbose in argument list
   set verbose false
@@ -35,7 +39,8 @@ if { $argc < 2 } {
   if { $idx != -1 } {
     puts "Running in verbose mode"
     set verbose true
-  }
+    # Remove --verbose/-v argument from list
+    set argv [lreplace $argv $idx $idx]
   }
 
   set pwFile [lindex $argv 0]
