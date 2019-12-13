@@ -61,7 +61,6 @@ set models [pw::Database getAll -type pw::Model]
 
 # Initialize empty lists for the models to be rotated
 set rotateModels [list]
-set rotateModelNames [list]
 set rotateModelList [list]
 
 # Look for any model(s) named like rotate-* (rotate-1, rotate-2, etc.)
@@ -69,7 +68,6 @@ foreach m $models {
   set name [$m getName]
   if { [string match "rotate-*" $name] } {
     lappend rotateModels $m
-    lappend rotateModelNames $name
     lappend rotateModelList [list $name $m]
   }
 }
@@ -87,7 +85,6 @@ set rotateModelList [lsort -index 0 $rotateModelList]
 if { $verbose == true } {
   puts ""
   puts "Rotate models: $rotateModels"
-  puts "Rotate model names: $rotateModelNames"
   puts "Rotate model list: $rotateModelList"
   puts ""
 }
@@ -95,8 +92,9 @@ if { $verbose == true } {
 # Create file name template; I do not like this name string, but it should be
 # clear albeit ugly
 set fileName [lindex  [split $pwFile .] 0]
-foreach m $rotateModelNames {
-  lappend fileName $m $rotateAngle
+foreach i $rotateModelList {
+  set name [lindex $i 0]
+  lappend fileName $name $rotateAngle
 }
 set fileName [join $fileName _]
 
