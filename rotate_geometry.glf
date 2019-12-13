@@ -59,24 +59,24 @@ pw::Application setUndoMaximumLevels 20
 # Get a list of all models in the project
 set models [pw::Database getAll -type pw::Model]
 
-# Initialize empty lists for the models to be rotated
-set rotateModels [list]
+# Initialize empty list for the models to be rotated; this list contains both
+# the internal model name as well as the user given name (rotate-*) as a sort
+# of key pair.
 set rotateModelList [list]
 
 # Look for any model(s) named like rotate-* (rotate-1, rotate-2, etc.)
 foreach m $models {
   set name [$m getName]
   if { [string match "rotate-*" $name] } {
-    lappend rotateModels $m
     lappend rotateModelList [list $name $m]
   }
 }
 
-if { [llength $rotateModels] == 0 } {
+if { [llength $rotateModelList] == 0 } {
   puts "ERROR: there must be at least one model named rotate-*"
   exit
 } else {
-  puts "Found [llength $rotateModels] [expr { [llength $rotateModels] > 1 ? "models" : "model" }] to rotate"
+  puts "Found [llength $rotateModelList] [expr { [llength $rotateModelList] > 1 ? "models" : "model" }] to rotate"
 }
 
 # Sort the rotateModelList by its first sub-list item, the user assigned name.
@@ -84,7 +84,6 @@ set rotateModelList [lsort -index 0 $rotateModelList]
 
 if { $verbose == true } {
   puts ""
-  puts "Rotate models: $rotateModels"
   puts "Rotate model list: $rotateModelList"
   puts ""
 }
@@ -113,7 +112,7 @@ set rotatePointNames [list]
 # by the user, so that the rotation direction is proper. The way this was done
 # before did not necessarily create the proper rotation axes.
 set modelIndex 1
-foreach m $rotateModels {
+foreach m $rotateModelList {
   set ptName1 "rotate-$modelIndex-point-1"
   set ptName2 "rotate-$modelIndex-point-2"
   set pt1 [pw::DatabaseEntity getByName $ptName1]
@@ -139,6 +138,13 @@ if { $verbose == true } {
   puts "Rotate points: $rotatePoints"
   puts "Rotate point names: $rotatePointNames"
   puts ""
+}
+
+# Build up list of internal model names for the Modify mode below
+set rotateModels [list]
+foreach i $rotateModelList {
+  set m [lindex $i 1]
+  lappend rotateModels $m
 }
 
 set rotateMode [pw::Application begin Modify $rotateModels]
