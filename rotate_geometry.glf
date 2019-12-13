@@ -23,6 +23,19 @@ if { $argc < 2 } {
   if { [lsearch $argv "--verify"] != -1 } {
     puts "Running in verify mode"
     set verify true
+
+  # Look for --verbose in argument list
+  set verbose false
+  set idx [lsearch $argv "--verbose"]
+  # Also check for -v
+  if { $idx == -1 } {
+    set idx [lsearch $argv "-v"]
+  }
+
+  if { $idx != -1 } {
+    puts "Running in verbose mode"
+    set verbose true
+  }
   }
 
   set pwFile [lindex $argv 0]
@@ -36,10 +49,10 @@ if { $argc < 2 } {
 # Set current working directory to be used as the base for saving files
 set currentDirectory [pwd]
 
-puts "loading $pwFile..."
+if { $verbose == true } { puts "loading $pwFile..." }
 pw::Application reset
 pw::Application load "$pwFile"
-puts "loaded $pwFile..."
+if { $verbose == true } { puts "loaded $pwFile..." }
 
 pw::Application setUndoMaximumLevels 20
 
@@ -70,9 +83,14 @@ if { [llength $rotateModels] == 0 } {
 
 # Sort the rotateModelList by its first sub-list item, the user assigned name.
 set rotateModelList [lsort -index 0 $rotateModelList]
-puts "Rotate models: $rotateModels"
-puts "Rotate model names: $rotateModelNames"
-puts "Rotate model list: $rotateModelList"
+
+if { $verbose == true } {
+  puts ""
+  puts "Rotate models: $rotateModels"
+  puts "Rotate model names: $rotateModelNames"
+  puts "Rotate model list: $rotateModelList"
+  puts ""
+}
 
 # Create file name template; I do not like this name string, but it should be
 # clear albeit ugly
@@ -118,8 +136,12 @@ if { [llength $rotatePoints] == 0 } {
   puts "Found [llength $rotatePoints] points to define [expr { [llength $rotatePoints] > 2 ? "rotation axes" : "a rotation axis" } ]"
 }
 
-puts "Rotate points: $rotatePoints"
-puts "Rotate point names: $rotatePointNames"
+if { $verbose == true } {
+  puts ""
+  puts "Rotate points: $rotatePoints"
+  puts "Rotate point names: $rotatePointNames"
+  puts ""
+}
 
 set rotateMode [pw::Application begin Modify $rotateModels]
 
@@ -139,14 +161,18 @@ set rotateMode [pw::Application begin Modify $rotateModels]
 
     #puts "Rotating model $m (named [$m getName]) about the points:\
           $pt2 and $pt2 (named [$pt1 getName] at $pt1Coord and [$pt2 getName] at $pt2Coord)"
-    puts "Rotating model $model (named $modelName) about the points:\
-          $pt2 and $pt2 (named [$pt1 getName] at $pt1Coord and [$pt2 getName] at $pt2Coord)"
+    if { $verbose == true } {
+      puts ""
+      puts "Rotating model $model (named $modelName) about the points:\
+            $pt2 and $pt2 (named [$pt1 getName] at $pt1Coord and [$pt2 getName] at $pt2Coord)"
+      puts ""
+    }
 
     # Define rotation axis
     set rotateAxis [pwu::Vector3 normalize [pwu::Vector3 subtract $pt1Coord $pt2Coord]]
     set rotateAnchor $pt1Coord
 
-    puts "The rotation angle is $rotateAngle degrees about axis: $rotateAxis"
+    if { $verbose == true } { puts "The rotation angle is $rotateAngle degrees about axis: $rotateAxis" }
 
     # Perform rotation
     pw::Entity transform [pwu::Transform rotation -anchor $rotateAnchor $rotateAxis $rotateAngle] $modelName
