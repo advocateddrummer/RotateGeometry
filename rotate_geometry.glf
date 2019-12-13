@@ -44,7 +44,12 @@ if { $argc < 2 } {
   }
 
   set pwFile [lindex $argv 0]
-  puts "Opening Pointwise project file $pwFile"
+  if { [string match "*.pw" $pwFile] } {
+    puts "Opening Pointwise project file $pwFile"
+  } else {
+    puts "ERROR: the first argument must be a Pointwise project file (ending in .pw)"
+    exit
+  }
   # TODO: support multiple rotation angles in case models need to be rotated
   # differing amounts.
   set rotateAngle [lindex $argv 1]
