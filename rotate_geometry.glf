@@ -12,9 +12,10 @@ puts "Running $argv0 with: [pw::Application getVersion]"
 #TODO: create a cleaner usage string to print here
 if { $argc < 2 } {
   puts "The Pointwise project file must be passed to this script as the first
-  argument and a rotation angle as the second. You may pass the --verify
-  argument as well to have this script export the rotated boundaries only for
-  initial verification."
+  argument and rotation angle(s) as the second. Multiple angles may be passed
+  and if fewer angles are provided than required, the last angle will be
+  reused. You may pass the --verify argument as well to have this script export
+  the rotated boundaries only for initial verification."
   exit
 } else {
   puts "Calling $argv0 with the following arguments: $argv"
@@ -50,10 +51,13 @@ if { $argc < 2 } {
     puts "ERROR: the first argument must be a Pointwise project file (ending in .pw)"
     exit
   }
-  # TODO: support multiple rotation angles in case models need to be rotated
-  # differing amounts.
-  set rotateAngle [lindex $argv 1]
-  puts "Rotating model(s) by $rotateAngle degrees"
+
+  # The remaining arguments should be rotation angles for the geometry;
+  # currently there is no error checking/verification. At least one angle must
+  # be specified, however, multiple may be specified, and if less than then the
+  # appropriate number of angles are specified, the last one is reused.
+  set rotateAngles [lrange $argv 1 end]
+  puts "Rotating model(s) by $rotateAngles degrees"
 }
 
 # Set current working directory to be used as the base for saving files
@@ -100,11 +104,15 @@ if { $verbose == true } {
 
 # Create file name template; I do not like this name string, but it should be
 # clear albeit ugly
+set angleIndex 0
 set fileName [lindex  [split $pwFile .] 0]
 foreach i $rotateModelList {
   set name [lindex $i 0]
+  set rotateAngle [expr {$angleIndex >= [llength $rotateAngles] ? [lindex $rotateAngles end] : [lindex $rotateAngles $angleIndex]}]
   lappend fileName $name $rotateAngle
+  incr angleIndex
 }
+
 set fileName [join $fileName _]
 
 # Now look for rotation axis information which should be at least two points
@@ -160,6 +168,7 @@ foreach i $rotateModelList {
 set rotateMode [pw::Application begin Modify $rotateModels]
 
   set pointIndex 0
+  set angleIndex 0
   foreach pair $rotateModelList {
     # Get internal model name
     set model [lindex $pair 0]
@@ -186,6 +195,8 @@ set rotateMode [pw::Application begin Modify $rotateModels]
     set rotateAxis [pwu::Vector3 normalize [pwu::Vector3 subtract $pt1Coord $pt2Coord]]
     set rotateAnchor $pt1Coord
 
+    set rotateAngle [expr {$angleIndex >= [llength $rotateAngles] ? [lindex $rotateAngles end] : [lindex $rotateAngles $angleIndex]}]
+    incr angleIndex
     if { $verbose == true } { puts "The rotation angle is $rotateAngle degrees about axis: $rotateAxis" }
 
     # Perform rotation
