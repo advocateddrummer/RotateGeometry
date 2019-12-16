@@ -9,13 +9,20 @@ package require PWI_Glyph 3.18.3
 
 puts "Running $argv0 with: [pw::Application getVersion]"
 
-#TODO: create a cleaner usage string to print here
+set help "Usage: The Pointwise project file must be passed to this script as
+       the first argument and rotation angle(s) as the second. Multiple angles
+       may be passed and if fewer angles are provided than required, the last
+       angle will be reused. You may pass the --verify argument as well to have
+       this script export the rotated boundaries only for initial verification.
+       Lastly, the --verbose/-v flag may be passed to make this script more
+       verbose."
+
 if { $argc < 2 } {
-  puts "The Pointwise project file must be passed to this script as the first
-  argument and rotation angle(s) as the second. Multiple angles may be passed
-  and if fewer angles are provided than required, the last angle will be
-  reused. You may pass the --verify argument as well to have this script export
-  the rotated boundaries only for initial verification."
+  puts ""
+  puts "################################################################################"
+  puts $help
+  puts "################################################################################"
+  puts ""
   exit
 } else {
   puts "Calling $argv0 with the following arguments: $argv"
