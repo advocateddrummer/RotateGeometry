@@ -20,6 +20,9 @@ _rotate-1-point-1_ and _rotate-1-point-2_; the _rotate-1_ model will be rotated
 about the axis defined by the two points by the user specified number of
 degrees.
 
+* **NOTE: all domains assocated with any rotated geometry _must_ be projected
+  onto the geometry it is assocated with or this will not work.**
+
 Lastly, the block, (or blocks, but this is not yet implemented), that contain
 the rotated geometry must be named _rotate-block-*_. This block(s) will be
 selected and re-initialized after the models are rotated. Currently, the only
