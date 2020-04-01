@@ -7,6 +7,9 @@
 
 package require PWI_Glyph 3.18.3
 
+# This script may be run in batch mode as follows:
+# /path/to/pointwise -b /path/to/glyph/script [args] pwfile angle
+
 puts "Running $argv0 with: [pw::Application getVersion]"
 
 set help "Usage: The Pointwise project file must be passed to this script as

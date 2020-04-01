@@ -29,3 +29,10 @@ selected and re-initialized after the models are rotated. Currently, the only
 block re-initialized is the block named _rotate-block-1_.
 
 * **TODO: Support multiple angles specified, one per model, at the command line.**
+
+## Usage
+
+This script may be run in batch mode as follows:
+~~~sh
+/path/to/pointwise -b /path/to/this/glyph/script [args] pwfile angle
+~~~
