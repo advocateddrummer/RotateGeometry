@@ -235,7 +235,7 @@ if { $verify } {
     set status abort
     # This does not work as Pointwise's Glyph page claims it should:
     #if { $gridExporter && [$gridExporter initialize -strict -type grid /Users/ehereth/Downloads/foobar.cgns] }
-    if { [$gridExporter initialize -strict -type CGNS "$currentDirectory/$fileName-boundaries.cgns"] } {
+    if { [$gridExporter initialize -strict -type CGNS "$fileName-boundaries.cgns"] } {
       puts "gridExporter initialize succeeded..."
       if { [$gridExporter verify] && [$gridExporter canWrite] && [$gridExporter write] } {
         puts "gridExporter {verify,canWrite,write} succeeded..."
@@ -246,7 +246,7 @@ if { $verify } {
   $gridExporter $status
   unset gridExporter
   puts "####################################################################################################"
-  puts "Exported the rotated boundaries to $currentDirectory/$fileName-boundaries.cgns"
+  puts "Exported the rotated boundaries to $fileName-boundaries.cgns"
   puts "\tcheck this for validity and then re-run this script without the \"--verify\" flag"
   puts "####################################################################################################"
 } else {
