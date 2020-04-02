@@ -70,8 +70,9 @@ if { $argc < 2 } {
   puts "Rotating model(s) by $rotateAngles degrees"
 }
 
-# Set current working directory to be used as the base for saving files
-set currentDirectory [pwd]
+# Get base directory from the Pointwise project file to be used as the base for
+# saving files.
+set baseDirectory [file dirname $pwFile]
 
 if { $verbose == true } { puts "loading $pwFile..." }
 pw::Application reset
@@ -113,9 +114,10 @@ if { $verbose == true } {
 }
 
 # Create file name template; I do not like this name string, but it should be
-# clear albeit ugly
+# clear albeit ugly.
 set angleIndex 0
-set fileName [lindex  [split $pwFile .] 0]
+set fileName [lindex [split [file tail $pwFile] .] 0]
+
 foreach i $rotateModelList {
   set name [lindex $i 0]
   set rotateAngle [expr {$angleIndex >= [llength $rotateAngles] ? [lindex $rotateAngles end] : [lindex $rotateAngles $angleIndex]}]
@@ -238,7 +240,7 @@ if { $verify } {
     set status abort
     # This does not work as Pointwise's Glyph page claims it should:
     #if { $gridExporter && [$gridExporter initialize -strict -type grid /Users/ehereth/Downloads/foobar.cgns] }
-    if { [$gridExporter initialize -strict -type CGNS "$fileName-boundaries.cgns"] } {
+    if { [$gridExporter initialize -strict -type CGNS "$baseDirectory/$fileName-boundaries.cgns"] } {
       puts "gridExporter initialize succeeded..."
       if { [$gridExporter verify] && [$gridExporter canWrite] && [$gridExporter write] } {
         puts "gridExporter {verify,canWrite,write} succeeded..."
@@ -249,7 +251,7 @@ if { $verify } {
   $gridExporter $status
   unset gridExporter
   puts "####################################################################################################"
-  puts "Exported the rotated boundaries to $fileName-boundaries.cgns"
+  puts "Exported the rotated boundaries to $baseDirectory/$fileName-boundaries.cgns"
   puts "\tcheck this for validity and then re-run this script without the \"--verify\" flag"
   puts "####################################################################################################"
 } else {
@@ -281,16 +283,16 @@ if { $verify } {
   set caeExporter [pw::Application begin CaeExport [pw::Entity sort [list $rotateBlock]]]
     set status abort
     # This does not work as Pointwise's Glyph page claims it should:
-    # if { $caeExporter && [$caeExporter initialize -strict -type CAE "$currentDirectory/$fileName"] }
+    # if { $caeExporter && [$caeExporter initialize -strict -type CAE "$baseDirectory/$fileName"] }
 
     # TODO: for some reason, this will sometimes
     # add the proper extension, and other times it will not. E.g., CGNS files do
     # not have an extension added, but many other I have tested do.
-    if { [$caeExporter initialize -strict -type CAE "$currentDirectory/$fileName"] } {
+    if { [$caeExporter initialize -strict -type CAE "$baseDirectory/$fileName"] } {
       puts "caeExporter initialize succeeded..."
       #$caeExporter setAttribute FilePrecision Double
-      #$caeExporter setAttribute GridExportMeshLinkFileName "$currentDirectory/$fileName.xml"
-      #$caeExporter setAttribute GridExportMeshLinkDatabaseFileName "$currentDirectory/$fileName.nmb"
+      #$caeExporter setAttribute GridExportMeshLinkFileName "$baseDirectory/$fileName.xml"
+      #$caeExporter setAttribute GridExportMeshLinkDatabaseFileName "$baseDirectory/$fileName.nmb"
       if { [$caeExporter verify] && [$caeExporter canWrite] && [$caeExporter write] } {
         puts "caeExporter {verify,canWrite,write} succeeded..."
         set status end
@@ -302,9 +304,9 @@ if { $verify } {
   if { [string compare $status "end"] == 0 } {
     puts "####################################################################################################"
     if { [llength $caeExtensions] == 1 } {
-      puts "Exported the rotated CAE to $currentDirectory/$fileName.$caeExtensions"
+      puts "Exported the rotated CAE to $baseDirectory/$fileName.$caeExtensions"
     } else {
-      puts "Exported the rotated CAE to $currentDirectory/$fileName.\{[join $caeExtensions ,]\}"
+      puts "Exported the rotated CAE to $baseDirectory/$fileName.\{[join $caeExtensions ,]\}"
     }
     puts "####################################################################################################"
   }
