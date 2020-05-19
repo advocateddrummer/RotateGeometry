@@ -20,6 +20,10 @@ set help "Usage: The Pointwise project file must be passed to this script as
        Lastly, the --verbose/-v flag may be passed to make this script more
        verbose."
 
+# TODO: add timing to this script a la:
+# set startTime [pwu::Time now]
+# set totalTime [pwu::Time elapsed $startTime]
+
 if { $argc < 2 } {
   puts ""
   puts "################################################################################"
