@@ -10,6 +10,8 @@ argument and the rotation amount, in degrees, specified as the second argument.
 Optionally, `--verify` may be passed at the end and the script will spit out
 only the boundaries, after rotation, so the user can verify that the script is
 doing what it is supposed to before actually initializing the volume block.
+Also, the `--verbose`/`-v` parameter may be provided at the command line to
+cause the script to report more about its progress etc.
 
 Currently, any geometry models that need to be rotated must be named
 _rotate-*_, i.e., _rotate-1_, _rotate-2_, etc. Furthermore, two database points
