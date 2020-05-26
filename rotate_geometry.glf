@@ -224,6 +224,19 @@ unset rotateMode
 pw::Application markUndoLevel Rotate
 
 if { $verbose == true } { puts "Model(s) rotated in [pwu::Time elapsed $rotateStartTime] seconds" }
+
+# For this particular case, these two domains need to be re-initialized in
+# order to generate a decent quality volume block.
+set elevonSide1 [pw::GridEntity getByName dom-41]
+set elevonSide2 [pw::GridEntity getByName dom-42]
+
+set solverMode [pw::Application begin UnstructuredSolver [list $elevonSide1 $elevonSide2]]
+  $solverMode run Refine
+$solverMode end
+unset solverMode
+
+pw::Application markUndoLevel Solve
+
 set rotateBlock [pw::GridEntity getByName rotate-block-1]
 
 if { $verify } {
