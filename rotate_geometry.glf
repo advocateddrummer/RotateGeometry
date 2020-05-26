@@ -20,10 +20,6 @@ set help "Usage: The Pointwise project file must be passed to this script as
        Lastly, the --verbose/-v flag may be passed to make this script more
        verbose."
 
-# TODO: add timing to this script a la:
-# set startTime [pwu::Time now]
-# set totalTime [pwu::Time elapsed $startTime]
-
 if { $argc < 2 } {
   puts ""
   puts "################################################################################"
@@ -78,10 +74,12 @@ if { $argc < 2 } {
 # saving files.
 set baseDirectory [file dirname $pwFile]
 
+set startTime [pwu::Time now]
+
 if { $verbose == true } { puts "loading $pwFile..." }
 pw::Application reset
 pw::Application load "$pwFile"
-if { $verbose == true } { puts "loaded $pwFile..." }
+if { $verbose == true } { puts "loaded $pwFile in [pwu::Time elapsed $startTime] seconds..." }
 
 pw::Application setUndoMaximumLevels 20
 
@@ -181,6 +179,8 @@ foreach i $rotateModelList {
   lappend rotateModels $m
 }
 
+set rotateStartTime [pwu::Time now]
+
 set rotateMode [pw::Application begin Modify $rotateModels]
 
   set pointIndex 0
@@ -223,6 +223,7 @@ $rotateMode end
 unset rotateMode
 pw::Application markUndoLevel Rotate
 
+if { $verbose == true } { puts "Model(s) rotated in [pwu::Time elapsed $rotateStartTime] seconds" }
 set rotateBlock [pw::GridEntity getByName rotate-block-1]
 
 if { $verify } {
@@ -259,6 +260,9 @@ if { $verify } {
   puts "\tcheck this for validity and then re-run this script without the \"--verify\" flag"
   puts "####################################################################################################"
 } else {
+
+  set solveStartTime [pwu::Time now]
+
   set unsSolver [pw::Application begin UnstructuredSolver [list $rotateBlock]]
     set status end
     $unsSolver setStopWhenFullLayersNotMet false
@@ -276,8 +280,12 @@ if { $verify } {
   unset unsSolver
   pw::Application markUndoLevel Initialize
 
+  puts "Initialization complete with status $status in [pwu::Time elapsed $solveStartTime] seconds"
+
   # Exit if Initialize fails
   if { [string compare $status "abort"] == 0 } { exit }
+
+  set exportStartTime [pwu::Time now]
 
   set caeType [pw::Application getCAESolver]
   set caeExtensions [pw::Application getCAESolverAttribute FileExtensions]
@@ -305,6 +313,8 @@ if { $verify } {
   $caeExporter $status
   unset caeExporter
 
+  puts "CAE export complete with status $status in [pwu::Time elapsed $solveStartTime] seconds"
+
   if { [string compare $status "end"] == 0 } {
     puts "####################################################################################################"
     if { [llength $caeExtensions] == 1 } {
@@ -315,5 +325,7 @@ if { $verify } {
     puts "####################################################################################################"
   }
 }
+
+puts "$argv0 complete, [pwu::Time elapsed $startTime] seconds elapsed"
 
 # vim: set ft=tcl:
