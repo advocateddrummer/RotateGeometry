@@ -305,7 +305,10 @@ if { $verify } {
 
   puts "caeType: $caeType, caeExtensions: $caeExtensions"
 
-  set caeExporter [pw::Application begin CaeExport [pw::Entity sort [list $rotateBlock]]]
+  # This grabs _all_ blocks in the project file for CAE export so be sure that
+  # there are no un-wanted/un-need blocks in the project.
+  set caeBlocks [pw::Grid getAll -type pw::Block]
+  set caeExporter [pw::Application begin CaeExport [pw::Entity sort $caeBlocks]]
     set status abort
     # This does not work as Pointwise's Glyph page claims it should:
     # if { $caeExporter && [$caeExporter initialize -strict -type CAE "$baseDirectory/$fileName"] }
